@@ -1,0 +1,25 @@
+<html>
+    <head><title>Gerador de Números</title></head>
+    <body>
+        <h1>Gerador de Números</h1>
+        <button onclick="gerarNumero('laudo')">Laudo</button>
+        <button onclick="gerarNumero('informacao')">Informação</button>
+        <button onclick="gerarNumero('relatorio')">Relatório</button>
+        <button onclick="gerarNumero('memorando')">Memorando</button>
+        <p id="resultado"></p>
+        <script>
+            function gerarNumero(tipo) {
+                fetch("/gerar_numero", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ tipo: tipo, usuario: "ELISA" })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("resultado").innerText = `Número: ${data.numero}, Ofício: ${data.oficio}`;
+                })
+                .catch(error => console.error("Erro:", error));
+            }
+        </script>
+    </body>
+</html>
