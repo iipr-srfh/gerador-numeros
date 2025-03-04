@@ -1,25 +1,702 @@
 <html>
-    <head><title>Gerador de Números</title></head>
-    <body>
-        <h1>Gerador de Números</h1>
+  <head>
+    <title>SETOR DE REPRESENTAÇÃO FACIAL HUMANA</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      /* Cabeçalho para logos e título */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background-color: #fff;
+      }
+      header .logo-left {
+        height: 90px;
+        margin-left: 50px;
+        margin-right: 10px;
+      }
+      header .logo-right {
+        height: 90px;
+        margin-right: 50px;
+        margin-left: 10px;
+      }
+      header h1 {
+        flex: 1;
+        margin: 0;
+      }
+      /* Container principal */
+      .container {
+        width: 95%;
+        margin: 0 auto;
+        padding: 0;
+        margin-top: 10px;
+      }
+      .box {
+        border: 1px solid black;
+        padding: 8px;
+        margin: 4px;
+        border-radius: 5px;
+      }
+      .usuario-box { background-color: #f4f4f4; }
+      .botao-box { background-color: #e0e0e0; }
+      .tabela-box { background-color: #dcdcdc; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+      }
+      th, td {
+        border: 1px solid black;
+        padding: 6px;
+        text-align: center;
+      }
+      table th { background-color: #bbb; }
+      /* Definição das colunas */
+      th:nth-child(1), td:nth-child(1) { width: 10%; }
+      th:nth-child(2), td:nth-child(2) { width: 10%; }
+      th:nth-child(3), td:nth-child(3) { width: 10%; }
+      th:nth-child(4), td:nth-child(4) { width: 10%; }
+      th:nth-child(5), td:nth-child(5) { width: 10%; }
+      th:nth-child(6), td:nth-child(6) { width: 10%; }
+      th:nth-child(7), td:nth-child(7) { width: 10%; }
+      th:nth-child(8), td:nth-child(8) { width: 15%; }
+      th:nth-child(9), td:nth-child(9) { width: 5%; }
+      th:nth-child(10), td:nth-child(10) { width: 10%; }
+      .pagination-controls {
+        margin: 2px 0;
+      }
+      .pagination-controls button {
+        background-color: #00abbd;
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin: 4px;
+        transition: background-color 0.3s;
+      }
+      .pagination-controls button:hover {
+        background-color: #0056b3;
+      }
+      .pagination-controls button.pagina-ativa {
+        background-color: #014e59;
+        color: white;
+        font-weight: bold;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin: 4px;
+        transition: background-color 0.3s;
+      }
+      footer {
+        font-size: 11px;
+        padding: 2px;
+        text-align: center;
+        background-color: #f4f4f4;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <header>
+      <img src="{{ url_for('serve_image', filename='pcpr.png') }}"
+           alt="PCPR Logo"
+           class="logo-left"
+           onclick="contarCliquesSecreto()" />
+      <h1>SETOR DE REPRESENTAÇÃO FACIAL HUMANA</h1>
+      <img src="{{ url_for('serve_image', filename='iipr.png') }}"
+           alt="IIPR Logo"
+           class="logo-right">
+    </header>
+
+    <div class="container">
+      <div class="box usuario-box">
+        <label for="usuario">Examinador Facial:</label>
+        <select id="usuario">
+          <option value="ALLAN">Allan</option>
+          <option value="ANDERSON">Anderson</option>
+          <option value="BERTUOL">Bertuol</option>
+          <option value="CLAUDIONOR">Claudionor</option>
+          <option value="ELISA">Elisa</option>
+        </select>
+      </div>
+      <div class="box botao-box">
         <button onclick="gerarNumero('laudo')">Laudo</button>
         <button onclick="gerarNumero('informacao')">Informação</button>
+        <button onclick="gerarNumero('informacao_int')">Informação Int.</button>
         <button onclick="gerarNumero('relatorio')">Relatório</button>
         <button onclick="gerarNumero('memorando')">Memorando</button>
-        <p id="resultado"></p>
-        <script>
-            function gerarNumero(tipo) {
-                fetch("/gerar_numero", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ tipo: tipo, usuario: "ELISA" })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("resultado").innerText = `Número: ${data.numero}, Ofício: ${data.oficio}`;
-                })
-                .catch(error => console.error("Erro:", error));
-            }
-        </script>
-    </body>
+        <button class="botao-oficio" onclick="gerarOficio()">Gerar Ofício</button>
+        <button class="botao-pdf" onclick="window.open('/exportar_pdf', '_blank')">Exportar PDF</button>
+        <button class="botao-graficos" onclick="window.open('/graficos', '_blank')">Gerar Gráficos</button>
+      </div>
+
+      <p id="resultado"></p>
+
+      <div class="box tabela-box">
+        <h2 id="titulo-tabela"></h2>
+        <table id="tabela">
+          <tr>
+            <th>Data</th>
+            <th>Ofício</th>
+            <th>Laudo</th>
+            <th>Informação</th>
+            <th>Informação Int.</th>
+            <th>Relatório</th>
+            <th>Memorando</th>
+            <th>Papiloscopista</th>
+            <th>Inválido</th>
+            <th>Observação</th>
+          </tr>
+        </table>
+        <div class="pagination-controls"></div>
+      </div>
+    </div>
+
+    <footer>
+      Desenvolvido com Python e Flask por pp_elisapinna - Versão 2.0 - 2025
+    </footer>
+
+    <!-- Modal de Observação -->
+    <div id="obsModal" class="modal">
+      <div class="modal-content">
+        <h3>Observação</h3>
+        <textarea id="obsTextarea" rows="10" style="width: 100%;"></textarea>
+        <br>
+        <button id="saveObsButton" onclick="salvarObservacao()">Salvar</button>
+        <button onclick="fecharModal()">Fechar</button>
+      </div>
+    </div>
+
+    <!-- Modal de Sucesso -->
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <h3>Sucesso</h3>
+        <p id="successMessage"></p>
+        <button onclick="fecharSuccessModal()">Fechar</button>
+      </div>
+    </div>
+
+    <!-- Modal de Erro -->
+    <div id="errorModal" class="modal">
+      <div class="modal-content">
+        <h3>Erro</h3>
+        <p id="errorMessage"></p>
+        <button onclick="fecharErrorModal()">Fechar</button>
+      </div>
+    </div>
+
+    <div id="secretModal" class="modal">
+      <div class="modal-content">
+        <h3>Gerenciar Papiloscopistas</h3>
+        <input type="text" id="novoPap" placeholder="Novo nome" />
+        <button onclick="adicionarPap()">Adicionar</button>
+        <br/><br/>
+        <select id="papRemover"></select>
+        <button onclick="removerPap()">Remover</button>
+        <br/><br/>
+        <button onclick="fecharSecretModal()">Fechar</button>
+      </div>
+    </div>
+
+    <script>
+      // Funções de modais de sucesso e erro
+      function mostrarSuccess(message) {
+        document.getElementById("successMessage").innerText = message;
+        document.getElementById("successModal").style.display = "block";
+      }
+      function fecharSuccessModal() {
+        document.getElementById("successModal").style.display = "none";
+      }
+      function mostrarError(message) {
+        document.getElementById("errorMessage").innerText = message;
+        document.getElementById("errorModal").style.display = "block";
+      }
+      function fecharErrorModal() {
+        document.getElementById("errorModal").style.display = "none";
+      }
+    </script>
+
+    <script>
+      // Valores default passados do Flask
+      var defaultOficio = {{ defaultOficio }};
+      var defaultNumeros = {{ defaultNumeros|tojson }};
+      
+      function tipoComAcento(tipo) {
+        switch (tipo) {
+          case "laudo":
+            return "LAUDO";
+          case "informacao":
+            return "INFORMAÇÃO";
+          case "informacao_int":
+            return "INFORMAÇÃO INT.";
+          case "relatorio":
+            return "RELATÓRIO";
+          case "memorando":
+            return "MEMORANDO";
+          default:
+            return tipo.toUpperCase();
+        }
+      }
+
+      let groupedData = [];
+      let currentPage = 1;
+      let itemsPerPage = 14;
+      let currentObsId = null;
+
+      function gerarNumero(tipo) {
+        let usuario = document.getElementById("usuario").value;
+        fetch("/gerar_numero", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tipo: tipo, usuario: usuario })
+        })
+        .then(response => response.json())
+        .then(data => {
+          var message = tipoComAcento(data.tipo) + " " + data.numero + " - Ofício: " + data.oficio;
+          mostrarSuccess(message);
+          document.getElementById("resultado").innerText = message;
+          atualizarTabela();
+        })
+        .catch(error => {
+          console.error("Erro:", error);
+          mostrarError("Erro ao gerar documento: " + error);
+        });
+      }
+
+      function gerarOficio() {
+        let usuario = document.getElementById("usuario").value;
+        fetch("/gerar_oficio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuario: usuario })
+        })
+        .then(response => response.json())
+        .then(data => {
+          var message = "OFÍCIO " + data.oficio + " - Usuário: " + data.usuario;
+          mostrarSuccess(message);
+          document.getElementById("resultado").innerText = message;
+          atualizarTabela();
+        })
+        .catch(error => {
+          console.error("Erro:", error);
+          mostrarError("Erro ao gerar ofício: " + error);
+        });
+      }
+
+      function atualizarTabela() {
+        fetch("/listar_registros")
+          .then(response => response.json())
+          .then(data => {
+            const agora = new Date();
+            const mes = agora.toLocaleString("pt-BR", { month: "long" });
+            const ano = agora.getFullYear();
+            document.getElementById("titulo-tabela").innerText = mes.toUpperCase() + " " + ano;
+            // Agrupamento dos registros
+            let registrosAgrupados = {};
+            data.forEach(item => {
+              let chave;
+              if (item.tipo === "relatorio") {
+                chave = "relatorio_" + item.id;
+              } else {
+                chave = item.tipo + "_" + item.oficio;
+              }
+              registrosAgrupados[chave] = {
+                laudo:         item.tipo === "laudo"         ? item.numero : "",
+                informacao:    item.tipo === "informacao"    ? item.numero : "",
+                informacao_int: item.tipo === "informacao_int" ? item.numero : "",
+                relatorio:     item.tipo === "relatorio"     ? item.numero : "",
+                memorando:     item.tipo === "memorando"     ? item.numero : "",
+                usuario:       item.usuario,
+                data:          item.data,
+                id:            item.id,
+                observacao:    item.observacao,
+                invalido:      item.invalido,
+                oficio:        (item.tipo === "relatorio") ? "" : item.oficio,
+                tipo:          item.tipo
+              };
+            });
+
+            let arrayAgrupado = [];
+            Object.keys(registrosAgrupados).forEach(key => {
+              arrayAgrupado.push(registrosAgrupados[key]);
+            });
+
+            groupedData = arrayAgrupado;
+            // Calcula o número total de páginas e renderiza a última página
+            let totalPages = Math.ceil(groupedData.length / itemsPerPage);
+            renderPage(totalPages);
+          });
+      }
+
+      function atualizarUsuarios() {
+        fetch("/listar_papilos")
+          .then(resp => resp.json())
+          .then(lista => {
+            let select = document.getElementById("usuario");
+            select.innerHTML = "";
+            lista.forEach(pap => {
+              let opt = document.createElement("option");
+              opt.value = pap;
+              opt.innerText = pap[0] + pap.slice(1).toLowerCase();
+              select.appendChild(opt);
+            });
+          })
+          .catch(error => console.error("Erro ao carregar papiloscopistas:", error));
+      }
+      
+      let contadorCliques = 0;
+      function contarCliquesSecreto() {
+        contadorCliques++;
+        if (contadorCliques === 5) {
+          carregarPapRemover();
+          document.getElementById("secretModal").style.display = "block";
+          contadorCliques = 0;
+        }
+      }
+
+      function fecharSecretModal() {
+        document.getElementById("secretModal").style.display = "none";
+        atualizarUsuarios();
+      }
+
+      function adicionarPap() {
+        let nome = document.getElementById("novoPap").value.trim().toUpperCase();
+        if (!nome) return;
+        fetch("/adicionar_pap?nome=" + encodeURIComponent(nome))
+          .then(resp => resp.json())
+          .then(data => {
+            mostrarSuccess("Papiloscopista adicionado: " + nome);
+            fecharSecretModal();
+          })
+          .catch(err => mostrarError("Erro ao adicionar papiloscopista: " + err));
+      }
+
+      function removerPap() {
+        let select = document.getElementById("papRemover");
+        let nome = select.value;
+        fetch("/remover_pap?nome=" + encodeURIComponent(nome))
+          .then(resp => resp.json())
+          .then(data => {
+            mostrarSuccess("Papiloscopista removido: " + nome);
+            fecharSecretModal();
+          })
+          .catch(err => mostrarError("Erro ao remover papiloscopista: " + err));
+      }
+
+      function carregarPapRemover() {
+        fetch("/listar_papilos")
+          .then(resp => resp.json())
+          .then(lista => {
+            let sel = document.getElementById("papRemover");
+            sel.innerHTML = "";
+            lista.forEach(pap => {
+              let opt = document.createElement("option");
+              opt.value = pap;
+              opt.innerText = pap;
+              sel.appendChild(opt);
+            });
+          })
+          .catch(error => console.error("Erro ao carregar papilos para remoção:", error));
+      }
+
+      // Declaração do TOKEN_SECRETO
+      const TOKEN_SECRETO = "MEUSEGREDO";
+
+      function renderPage(page) {
+        let tabela = document.getElementById("tabela");
+        tabela.innerHTML = `
+          <tr>
+            <th>Data</th>
+            <th>Ofício</th>
+            <th>Laudo</th>
+            <th>Informação</th>
+            <th>Informação Int.</th>
+            <th>Relatório</th>
+            <th>Memorando</th>
+            <th>Papiloscopista</th>
+            <th>Inválido</th>
+            <th>Observação</th>
+          </tr>
+        `;
+        
+        let totalItems = groupedData.length;
+        let totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        let startIndex = (page - 1) * itemsPerPage;
+        let endIndex = startIndex + itemsPerPage;
+        let pageData = groupedData.slice(startIndex, endIndex);
+        
+        pageData.forEach(item => {
+          let rowClass = item.invalido ? "invalido" : item.usuario.toLowerCase();
+          let invalidoHTML = item.invalido
+            ? "Inválido"
+            : `<a href="#" onclick="marcarInvalido(${item.id}); return false;">Inválido</a>`;
+          let obsDisplay = (item.observacao && item.observacao.trim() !== "")
+            ? "📝"
+            : "Clique para anotar";
+          let oficioDisplay = (item.tipo === "relatorio") ? "" : item.oficio;
+                    
+          let linha = `
+            <tr class="${rowClass}">
+              <td>${item.data}</td>
+              <td>${oficioDisplay}</td>
+              <td>${item.laudo || ""}</td>
+              <td>${item.informacao || ""}</td>
+              <td>${item.informacao_int || ""}</td>
+              <td>${item.relatorio || ""}</td>
+              <td>${item.memorando || ""}</td>
+              <td>${item.usuario}</td>
+              <td>${invalidoHTML}</td>
+              <td onclick='abrirModal(${item.id}, ${JSON.stringify(item.observacao)})' style="cursor:pointer;">${obsDisplay}</td>
+            </tr>
+          `;
+          tabela.innerHTML += linha;
+        });
+        
+        let validRecords = groupedData.filter(item => !item.invalido);
+        let uniqueDates = new Set(validRecords.map(item => item.data));
+        let totalDias = uniqueDates.size;
+        let totalOficios = validRecords.filter(item => item.tipo !== "relatorio").length;
+        totalOficios += defaultOficio;
+        let totalLaudo = 0;
+        let totalInformacao = 0;
+        let totalInformacaoInt = 0;
+        let totalRelatorio = 0;
+        let totalMemorando = 0;
+        
+        validRecords.forEach(item => {
+          if (item.laudo !== "") totalLaudo++;
+          if (item.informacao !== "") totalInformacao++;
+          if (item.informacao_int !== "") totalInformacaoInt++;
+          if (item.relatorio !== "") totalRelatorio++;
+          if (item.memorando !== "") totalMemorando++;
+        });
+        
+        totalLaudo += defaultNumeros.laudo;
+        totalInformacao += defaultNumeros.informacao;
+        totalInformacaoInt += defaultNumeros.informacao_int;
+        totalRelatorio += defaultNumeros.relatorio;
+        totalMemorando += defaultNumeros.memorando;
+        
+        tabela.innerHTML += `
+          <tr class="totals">
+            <td>Total de Dias: <span class="totals-number">${totalDias}</span></td>
+            <td>Total de Ofícios: <span class="totals-number">${totalOficios}</span></td>
+            <td>Total de Laudos: <span class="totals-number">${totalLaudo}</span></td>
+            <td>Total de Informações: <span class="totals-number">${totalInformacao}</span></td>
+            <td>Total de Informações Int.: <span class="totals-number">${totalInformacaoInt}</span></td>
+            <td>Total de Relatórios: <span class="totals-number">${totalRelatorio}</span></td>
+            <td>Total de Memorandos: <span class="totals-number">${totalMemorando}</span></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        `;
+        
+        let paginationHTML = "";
+        paginationHTML += `<button onclick="prevPage()">&laquo; Anterior</button> `;
+        for (let i = 1; i <= totalPages; i++) {
+          if (i === page) {
+            paginationHTML += `<button class="pagina-ativa" onclick="renderPage(${i})">${i}</button> `;
+          } else {
+            paginationHTML += `<button onclick="renderPage(${i})">${i}</button> `;
+          }
+        }
+        paginationHTML += `<button onclick="nextPage()">Próxima &raquo;</button>`;
+        document.querySelector(".pagination-controls").innerHTML = paginationHTML;
+        
+        currentPage = page;
+      }
+
+      function prevPage() {
+        if (currentPage > 1) {
+          renderPage(currentPage - 1);
+        }
+      }
+      function nextPage() {
+        let totalItems = groupedData.length;
+        let totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (currentPage < totalPages) {
+          renderPage(currentPage + 1);
+        }
+      }
+
+      function abrirModal(id, obs) {
+        currentObsId = id;
+        document.getElementById("obsTextarea").value = obs || "";
+        if (obs && obs.trim() !== "") {
+          document.getElementById("obsTextarea").readOnly = true;
+          document.getElementById("saveObsButton").style.display = "none";
+        } else {
+          document.getElementById("obsTextarea").readOnly = false;
+          document.getElementById("saveObsButton").style.display = "inline";
+        }
+        document.getElementById("obsModal").style.display = "block";
+      }
+      function fecharModal() {
+        document.getElementById("obsModal").style.display = "none";
+      }
+      function salvarObservacao() {
+        let novaObs = document.getElementById("obsTextarea").value;
+        fetch("/update_observacao", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: currentObsId, observacao: novaObs })
+        })
+        .then(response => response.json())
+        .then(data => {
+          fecharModal();
+          atualizarTabela();
+          mostrarSuccess("Observação salva com sucesso!");
+        })
+        .catch(error => {
+          console.error("Erro:", error);
+          mostrarError("Erro ao salvar observação: " + error);
+        });
+      }
+
+      function marcarInvalido(id) {
+        if (!confirm('Deseja marcar este registro como inválido?')) {
+          return;
+        }
+        fetch(`/marcar_invalido?id=${id}&token=${TOKEN_SECRETO}`)
+          .then(response => response.json())
+          .then(data => {
+            atualizarTabela();
+          })
+          .catch(error => {
+            console.error("Erro:", error);
+            mostrarError("Erro ao marcar como inválido: " + error);
+          });
+      }
+
+      atualizarTabela();
+      atualizarUsuarios();
+
+      function renderCharts() {
+        fetch("/dados_graficos")
+          .then(response => response.json())
+          .then(data => {
+            var ctxGlobal = document.getElementById('graficoTipos').getContext('2d');
+            new Chart(ctxGlobal, {
+              type: 'pie',
+              data: {
+                labels: docLabels,
+                datasets: [{
+                  data: [
+                    data.documentos_por_tipo.laudo,
+                    data.documentos_por_tipo.informacao,
+                    data.documentos_por_tipo.informacao_int,
+                    data.documentos_por_tipo.relatorio,
+                    data.documentos_por_tipo.memorando
+                  ],
+                  backgroundColor: [
+                    globalChartColors["Laudo"],
+                    globalChartColors["Informação"],
+                    globalChartColors["Informação Int."],
+                    globalChartColors["Relatório"],
+                    globalChartColors["Memorando"]
+                  ],
+                  borderColor: [
+                    globalChartColors["Laudo"],
+                    globalChartColors["Informação"],
+                    globalChartColors["Informação Int."],
+                    globalChartColors["Relatório"],
+                    globalChartColors["Memorando"]
+                  ],
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  datalabels: { color: '#000', formatter: function(value) { return value; }, font: { weight: 'bold' } }
+                }
+              },
+              plugins: [ChartDataLabels]
+            });
+
+            var globalBottomLegendHTML = "<ul>";
+            docLabels.forEach(function(label) {
+              var count;
+              switch(label) {
+                case "Laudo": count = data.documentos_por_tipo.laudo; break;
+                case "Informação": count = data.documentos_por_tipo.informacao; break;
+                case "Informação Int.": count = data.documentos_por_tipo.informacao_int; break;
+                case "Relatório": count = data.documentos_por_tipo.relatorio; break;
+                case "Memorando": count = data.documentos_por_tipo.memorando; break;
+              }
+              globalBottomLegendHTML += "<li><span style='background-color:" + globalChartColors[label] + ";'></span> " + label + ": " + count + "</li>";
+            });
+            globalBottomLegendHTML += "</ul>";
+            document.getElementById("globalBottomLegend").innerHTML = globalBottomLegendHTML;
+
+            var papContainer = document.getElementById("papChartsContainer");
+            papContainer.innerHTML = "";
+            papNames.forEach(function(pap) {
+              var box = document.createElement("div");
+              box.className = "pap-chart-box";
+              box.innerHTML = "<div class='pap-chart-title'>" + pap + "</div>" +
+                              "<canvas id='graficoPap_" + pap + "' width='" + papChartWidth + "' height='" + papChartHeight + "'></canvas>" +
+                              "<div class='pap-bottom-legend' id='papBottomLegend_" + pap + "'></div>";
+              papContainer.appendChild(box);
+
+              var papDataObj = data.documentos_por_papiloscopista[pap];
+              var papData = [
+                papDataObj.laudo,
+                papDataObj.informacao,
+                papDataObj.informacao_int,
+                papDataObj.relatorio,
+                papDataObj.memorando
+              ];
+
+              var ctxPap = document.getElementById("graficoPap_" + pap).getContext('2d');
+              new Chart(ctxPap, {
+                type: 'pie',
+                data: {
+                  labels: docLabels,
+                  datasets: [{
+                    data: papData,
+                    backgroundColor: papColors[pap].variants,
+                    borderColor: papColors[pap].variants,
+                    borderWidth: 1
+                  }]
+                },
+                options: {
+                  responsive: false,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    datalabels: { color: '#000', formatter: function(value) { return value; }, font: { weight: 'bold' } }
+                  }
+                },
+                plugins: [ChartDataLabels]
+              });
+
+              var papBottomLegendHTML = "<ul>";
+              docLabels.forEach(function(label, i) {
+                papBottomLegendHTML += "<li><span style='background-color:" + papColors[pap].variants[i] + ";'></span> " + label + ": " + papData[i] + "</li>";
+              });
+              papBottomLegendHTML += "</ul>";
+              document.getElementById("papBottomLegend_" + pap).innerHTML = papBottomLegendHTML;
+            });
+          })
+          .catch(error => console.error("Erro ao carregar dados para os gráficos:", error));
+      }
+      renderCharts();
+    </script>
+  </body>
 </html>
